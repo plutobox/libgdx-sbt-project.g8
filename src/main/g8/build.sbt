@@ -1,5 +1,6 @@
 import com.google.common.base.Charsets
 import com.google.common.io.Files
+import org.apache.commons.io.FileUtils
 import scala.collection.convert.wrapAll._
 import sbtrobovm.RobovmPlugin.ManagedNatives
 
@@ -63,17 +64,34 @@ lazy val android = project in file("android") settings (sharedSettings ++ androi
       "com.badlogicgames.gdx" % "gdx-platform" % libgdxVersion % ManagedNatives classifier "natives-armeabi-v7a",
       "com.badlogicgames.gdx" % "gdx-platform" % libgdxVersion % ManagedNatives classifier "natives-x86"
     ),
+    nativesDirectory := target.value / "extractedLibs",
     extractNatives := {
-      sbtrobovm.RobovmPlugin.AndroidManagedNatives.value.head //TODO
+      val targets = Seq("armeabi-v7a", "armeabi", "x86") //NOTE the order of armeabi-v7a and armeabi
+      val libsDir = nativesDirectory.value
+      val log = streams.value.log
+      IO.createDirectory(libsDir)
+      for(library <- sbtrobovm.RobovmPlugin.AndroidManagedNatives.value){
+        log.debug("Handling library "+library.getCanonicalPath)
+        val targetLibraryFile = targets.find(t => library.getParent.contains(t)) match {
+          case Some(arch) =>
+            log.debug("Extracted \""+arch+"\" library "+library.getName)
+            libsDir / arch / library.getName
+          case None =>
+            log.debug("Extracted no-arch library "+library.getName)
+            libsDir / library.getName
+        }
+        if(targetLibraryFile.exists()){
+          log.debug("Updating library "+targetLibraryFile.getCanonicalPath)
+          IO.delete(targetLibraryFile)
+        }
+        FileUtils.copyFile(library, targetLibraryFile)
+      }
     },
-    /*nativeExtractions <<= (baseDirectory) { base => Seq(
-        ("natives-armeabi.jar", new ExactFilter("libgdx.so"), base / "libs" / "armeabi"),
-        ("natives-armeabi-v7a.jar", new ExactFilter("libgdx.so"), base / "libs" / "armeabi-v7a"),
-        ("natives-x86.jar", new ExactFilter("libgdx.so"), base / "libs" / "x86")
-      )},*/
-    projectLayout := new ProjectLayout.Wrapped(ProjectLayout.Gradle(baseDirectory.value, target.value)) {
+    projectLayout in Android := new ProjectLayout.Wrapped(ProjectLayout.Gradle(baseDirectory.value, target.value)) {
       override def assets = assetsDirectory.value
+      override def jniLibs = nativesDirectory.value
     },
+    Keys.`package` in Android <<= (Keys.`package` in Android) dependsOn extractNatives,
     platformTarget in Android := "android-$api_level$",
     proguardOptions in Android ++=
       Files.readLines(file("core/proguard-project.txt"), Charsets.UTF_8) ++
@@ -102,6 +120,8 @@ lazy val ios = project in file("ios") settings (sharedSettings ++ iOSRoboVMSetti
 
 lazy val assetsDirectory = settingKey[File]("Directory with game's assets")
 
-lazy val extractNatives = taskKey[File]("Extracts natives from jars")
+lazy val nativesDirectory = settingKey[File]("Directory where android natives are extracted to")
+
+lazy val extractNatives = taskKey[Unit]("Extracts natives to nativesDirectory")
 
 lazy val all = project in file(".") aggregate(core, desktop, android, ios)
