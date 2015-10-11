@@ -1,6 +1,6 @@
 package $package$
 
-import com.badlogic.gdx.backends.lwjgl._
+import com.badlogic.gdx.backends.lwjgl.{LwjglApplication, LwjglApplicationConfiguration}
 
 object Main extends App {
     val cfg = new LwjglApplicationConfiguration
