@@ -81,8 +81,23 @@ lazy val android = project in file("android") settings (sharedSettings ++ androi
   )
 
 lazy val ios = project in file("ios") settings (sharedSettings ++ iOSRoboVMSettings: _*) dependsOn core settings (
-    name := (name in core).value + "-ios"
-    //
+    name := (name in core).value + "-ios",
+    libraryDependencies ++= Seq(
+      "com.badlogicgames.gdx" % "gdx-backend-robovm" % libgdxVersion notTransitive(),
+      "org.robovm" % "robovm-cocoatouch" % RoboVMVersion,
+      "org.robovm" % "robovm-objc" % RoboVMVersion,
+      "org.robovm" % "robovm-rt" % RoboVMVersion,
+      "com.badlogicgames.gdx" % "gdx-platform" % libgdxVersion classifier "natives-ios"
+    ),
+    robovmProperties := Right(Map[String,String](
+      "app.version" -> version.value,
+      "app.mainclass" -> (mainClass in Compile).value.getOrElse({System.err.println("Main class is required for iOS project."); ""}),
+      "app.executable" -> "$name;format="Camel"$",
+      "app.build" -> "0",
+      "app.name" -> "$name$",
+      "app.assetdir" -> assetsDirectory.value.getCanonicalPath
+    )),
+    robovmConfiguration := Left(baseDirectory.value / "robovm.xml")
   )
 
 lazy val assetsDirectory = settingKey[File]("Directory with game's assets")
