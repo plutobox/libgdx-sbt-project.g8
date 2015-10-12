@@ -1,14 +1,22 @@
 package $package$
 
-import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.{GL20, Texture}
 import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.{Gdx, Game}
+import com.badlogic.gdx.{Game, Gdx}
 
 class $name;format="Camel"$ extends Game {
-    override def create() {}
+
+    lazy val sprite = new Texture("libgdxlogo.png")
+    lazy val batch = new SpriteBatch
+
+    override def create(): Unit = {}
 
     override def render(): Unit = {
-        Gdx.gl.glClearColor(MathUtils.random(),MathUtils.random(),MathUtils.random(),1f)
+        Gdx.gl.glClearColor(0.4f + MathUtils.random()*0.2f,0.4f + MathUtils.random()*0.2f,0.4f + MathUtils.random()*0.2f,1f)
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        batch.begin()
+        batch.draw(sprite, (Gdx.graphics.getWidth - sprite.getWidth) / 2f, (Gdx.graphics.getHeight - sprite.getHeight) / 2f)
+        batch.end()
     }
 }
