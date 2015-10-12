@@ -137,10 +137,7 @@ lazy val android = project in file("android") settings (sharedSettings ++ androi
 lazy val ios = project in file("ios") settings (sharedSettings ++ iOSRoboVMSettings: _*) dependsOn core settings (
     name := (name in core).value + "-ios",
     libraryDependencies ++= Seq(
-      "com.badlogicgames.gdx" % "gdx-backend-robovm" % libgdxVersion notTransitive(),
-      "org.robovm" % "robovm-cocoatouch" % RoboVMVersion,
-      "org.robovm" % "robovm-objc" % RoboVMVersion,
-      "org.robovm" % "robovm-rt" % RoboVMVersion,
+      "com.badlogicgames.gdx" % "gdx-backend-robovm" % libgdxVersion,
       "com.badlogicgames.gdx" % "gdx-platform" % libgdxVersion classifier "natives-ios"
     ),
     robovmProperties := Right(Map[String,String](
