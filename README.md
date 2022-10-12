@@ -10,7 +10,7 @@ Alternatively consult g8's [readme](http://github.com/n8han/giter8#readme) for t
 
 Then, in your favorite shell, type the command (prepend the command with `sbt` if you have used the plugin):
 
-    $ g8 Darkyenus/libgdx-sbt-project
+    $ g8 plutobox/libgdx-sbt-project
 
 After filling in some information about your project, you can start placing your game's source files and assets in `core/src/main/scala` and `assets` respectively.
 You can of course use Java as well.
